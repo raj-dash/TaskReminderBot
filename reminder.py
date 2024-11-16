@@ -30,7 +30,7 @@ BOT_NAME: Final = "@TaskReminder_REJ_Bot"
 
 # variables
 user_data = []
-HOW_OFTEN, ASK_NAME, ASK_DATETIME, ASK_REPETITION, IS_REPEAT, FINISHED = range(6)
+ASK_NAME, ASK_DATETIME, ASK_REPETITION, IS_REPEAT, HOW_OFTEN, FINISHED = range(6)
 
 # Commands
 
@@ -42,7 +42,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # set of functions to add an item to task reminders
 
-async def add_item(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def add_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Please enter the name of the task.")
     return ASK_NAME
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     # create a conversation handler
 
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("add_item", add_item)],
+        entry_points=[CommandHandler("add_task", add_task)],
         states={
             ASK_NAME : [MessageHandler(filters.TEXT, ask_task)],
             ASK_DATETIME : [MessageHandler(filters.TEXT, ask_datetime)],
