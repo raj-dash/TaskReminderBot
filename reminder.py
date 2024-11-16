@@ -13,8 +13,6 @@ from datetime import datetime
 
 # to do
 '''
-* Create a function to delete a specific task
-* Create a function to empty all tasks
 * Create a reminder system, make sure that it can be snoozed and it can also be shut up via mentioning that the task is done
 * Create a way to pause reminders
 * Add a way to add persistent storage for tasks'
@@ -132,6 +130,18 @@ def delete_item(item, array):
     print(temp)
     array.remove(temp)
 
+# End of delete task functions
+
+# clear tasks function
+async def clear_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global user_data
+    if len(user_data) == 0:
+        await update.message.reply_text("Tasks are already clear")
+        return
+    user_data = []
+    print(user_data)
+    await update.message.reply_text("All tasks have been cleared")
+
 
 
 # error function
@@ -203,6 +213,7 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help))
     app.add_handler(CommandHandler("show_tasks", show_tasks))
+    app.add_handler(CommandHandler("clear_tasks", clear_tasks))
     app.add_handler(conv_handler)
     app.add_handler(delete_handler)
     
