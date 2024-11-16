@@ -28,9 +28,14 @@ load_dotenv
 TOKEN: Final = os.getenv("TOKEN")
 BOT_NAME: Final = "@TaskReminder_REJ_Bot"
 
-# variables
+# shared variables
 user_data = []
+
+# variables for add_task
 ASK_NAME, ASK_DATETIME, ASK_REPETITION, IS_REPEAT, HOW_OFTEN, FINISHED = range(6)
+
+# variables for delete_task
+DELETE_TASK = 0
 
 # Commands
 
@@ -93,7 +98,9 @@ async def finished(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 # End of functions that add an item to task reminders
-    
+
+# show all tasks 
+
 async def show_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(user_data) == 0:
         await update.message.reply_text("There are currently no tasks left to complete! Congratulations!")
@@ -102,6 +109,30 @@ async def show_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for task in user_data:
             tasks_string += f"'{task[0]}' : '{str(task[1])}' \n"
         await update.message.reply_text(tasks_string)
+
+# delete tasks
+
+async def delete_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Please enter the name of the task you wish to delete")
+    return DELETE_TASK
+
+async def finish_delete(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    task_name: str = update.message.text
+    delete_item(task_name, user_data)
+    print(user_data)
+    await update.message.reply_text(f"'{task_name}' has been deleted")
+    return ConversationHandler.END
+
+def delete_item(item, array):
+    temp = []
+    for element in array:
+        if element[0] == item:
+            temp = element
+            break
+    print(temp)
+    array.remove(temp)
+
+
 
 # error function
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -160,11 +191,20 @@ if __name__ == "__main__":
         fallbacks=[CommandHandler("cancel", cancel)]
     )
 
+    delete_handler = ConversationHandler(
+        entry_points=[CommandHandler("delete_task", delete_task)],
+        states={
+            DELETE_TASK : [MessageHandler(filters.TEXT, finish_delete)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)]
+    )
+
     # commands
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help))
     app.add_handler(CommandHandler("show_tasks", show_tasks))
     app.add_handler(conv_handler)
+    app.add_handler(delete_handler)
     
     # Messages
     app.add_handler(MessageHandler(filters.TEXT, handle_message))
