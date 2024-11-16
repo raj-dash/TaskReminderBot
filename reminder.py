@@ -5,6 +5,21 @@ from telegram import Update
 from telegram.ext import Application, MessageHandler, CommandHandler, filters, ContextTypes, ConversationHandler
 from datetime import datetime
 
+# known issues
+'''
+Tasks with the same can be created, this can create confusion when deleting tasks, pls fix
+'''
+
+# to do
+'''
+* Create function to show all the task items to the user
+* Create a function to delete a specific task
+* Create a function to empty all tasks
+* Create a reminder system, make sure that it can be snoozed and it can also be shut up via mentioning that the task is done
+* Create a way to pause reminders
+'''
+
+
 # loading in secrets
 
 load_dotenv
@@ -22,6 +37,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("This will contain all the commands that I can execute")
+
+# set of functions to add an item to task reminders
 
 async def add_item(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Please enter the name of the task.")
@@ -44,7 +61,6 @@ async def ask_datetime(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Wrong format. Please enter the date and time in YYYY-MM-DD HH:MM format")
         return ASK_DATETIME
 
-# I still need to make the input for if the reminder repeats, and then how many repetitions if yes
 async def ask_repetition(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text
     processed_user_input = user_input[0].lower()
@@ -73,6 +89,8 @@ async def finished(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"The task {name} has been added!")
     print(user_data)
     return ConversationHandler.END
+
+# End of functions that add an item to task reminders
     
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
