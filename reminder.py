@@ -100,7 +100,7 @@ async def show_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         tasks_string = ''
         for task in user_data:
-            tasks_string += f"'{task[0]}' to be done by '{str(task[1])}' \n"
+            tasks_string += f"'{task[0]}' : '{str(task[1])}' \n"
         await update.message.reply_text(tasks_string)
 
 # error function
