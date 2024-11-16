@@ -7,16 +7,18 @@ from datetime import datetime
 
 # known issues
 '''
-Tasks with the same can be created, this can create confusion when deleting tasks, pls fix
+* Tasks with the same can be created, this can create confusion when deleting tasks, pls fix
+* Need to enter text twice before finished is executed
 '''
 
 # to do
 '''
-* Create function to show all the task items to the user
 * Create a function to delete a specific task
 * Create a function to empty all tasks
 * Create a reminder system, make sure that it can be snoozed and it can also be shut up via mentioning that the task is done
 * Create a way to pause reminders
+* Add a way to add persistent storage for tasks'
+* undo function
 '''
 
 
@@ -53,7 +55,7 @@ async def ask_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def ask_datetime(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text
     try:
-        reminder_time = datetime.strptime(user_input, "%Y-%m-%d %H:%M")
+        reminder_time = datetime.strptime(user_input, r"%Y-%m-%d %H:%M")
         user_data[-1].append(reminder_time)
         await update.message.reply_text("Would you like this reminder to repeat? [Yes/No]")
         return ASK_REPETITION
@@ -79,7 +81,7 @@ async def ask_repetition(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def ask_how_often(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input: int = int(update.message.text)
     if user_input <= 0:
-        await update.message.reply_text("Please enter a valid number")
+        await update.message.reply_text("Please enter a positive number")
         return HOW_OFTEN
     user_data[-1].append(user_input)
     return FINISHED
@@ -92,7 +94,16 @@ async def finished(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # End of functions that add an item to task reminders
     
+async def show_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if len(user_data) == 0:
+        await update.message.reply_text("There are currently no tasks left to complete! Congratulations!")
+    else:
+        tasks_string = ''
+        for task in user_data:
+            tasks_string += f"'{task[0]}' to be done by '{str(task[1])}' \n"
+        await update.message.reply_text(tasks_string)
 
+# error function
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Cancelled")
     return ConversationHandler.END
@@ -152,6 +163,7 @@ if __name__ == "__main__":
     # commands
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help))
+    app.add_handler(CommandHandler("show_tasks", show_tasks))
     app.add_handler(conv_handler)
     
     # Messages
