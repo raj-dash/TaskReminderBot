@@ -48,3 +48,5 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(response)
 
+async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print(f"Update {update} cause the following error {context.error}")
