@@ -33,5 +33,18 @@ def handle_response(text: str) -> str:
 
 # Messages
 
-def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    pass
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message_type: str = update.message.chat.type
+    text: str = update.message.text
+
+    print(f"User ({update.message.chat.id}) in {message_type}: '{text}'")
+
+    if message_type == 'group':
+        return
+    
+    response: str = handle_response(text)
+
+    print(f"Bot: {response}")
+
+    await update.message.reply_text(response)
+
