@@ -50,3 +50,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(f"Update {update} cause the following error {context.error}")
+
+if __name__ == "__main__":
+    print("Starting Bot")
+    app = Application.builder().token(TOKEN).build()
+
+    # commands
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", help))
+    
+    # Messages
+    app.add_handler(MessageHandler(filters.TEXT, handle_message))
+
+    # errors
+    app.add_error_handler(error)
+
+    print("Polling...")
+    app.run_polling(poll_interval=3)
