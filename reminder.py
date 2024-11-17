@@ -246,7 +246,7 @@ if __name__ == "__main__":
     app.add_handler(MessageHandler(filters.TEXT, handle_message))
 
     # background tasks
-    app.job_queue.run_repeating(reminder_check, first=0, interval=5)
+    app.job_queue.run_repeating(reminder_check, first=0, interval=60)
 
     # errors
     app.add_error_handler(error)
