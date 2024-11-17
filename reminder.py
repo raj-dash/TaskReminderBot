@@ -1,9 +1,9 @@
-import os
+import os, asyncio
 from typing import Final
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import Application, MessageHandler, CommandHandler, filters, ContextTypes, ConversationHandler
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # known issues
 '''
@@ -14,6 +14,8 @@ from datetime import datetime
 # to do
 '''
 * Create a reminder system, make sure that it can be snoozed and it can also be shut up via mentioning that the task is done
+* Add a completed tasks list
+* Create a function to show the completed function
 * Create a way to pause reminders
 * Add a way to add persistent storage for tasks'
 * undo function
@@ -27,7 +29,7 @@ TOKEN: Final = os.getenv("TOKEN")
 BOT_NAME: Final = "@TaskReminder_REJ_Bot"
 
 # shared variables
-user_data = []
+user_data = [[7624783354, 'no', datetime(2024, 11, 17, 11, 4), True, 2]]
 
 # variables for add_task
 ASK_NAME, ASK_DATETIME, ASK_REPETITION, IS_REPEAT, HOW_OFTEN, FINISHED = range(6)
@@ -51,7 +53,8 @@ async def add_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def ask_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
     task_name = update.message.text
-    user_data.append([task_name])
+    user_id = update.effective_chat.id
+    user_data.append([user_id,task_name])
     await update.message.reply_text(f"When would you like to be reminded of {task_name} (YYYY-MM-DD HH:MM): ")
     return ASK_DATETIME
 
@@ -90,7 +93,7 @@ async def ask_how_often(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return FINISHED
 
 async def finished(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    name = user_data[-1][0]
+    name = user_data[-1][1]
     await update.message.reply_text(f"The task {name} has been added!")
     print(user_data)
     return ConversationHandler.END
@@ -105,7 +108,7 @@ async def show_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         tasks_string = ''
         for task in user_data:
-            tasks_string += f"'{task[0]}' : '{str(task[1])}' \n"
+            tasks_string += f"'{task[1]}' : '{str(task[2])}' \n"
         await update.message.reply_text(tasks_string)
 
 # delete tasks
@@ -124,13 +127,35 @@ async def finish_delete(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def delete_item(item, array):
     temp = []
     for element in array:
-        if element[0] == item:
+        if element[1] == item:
             temp = element
             break
     print(temp)
     array.remove(temp)
 
 # End of delete task functions
+
+# function to check reminders
+
+async def reminder_check(application):
+    if (len(user_data) == 0):
+        return
+    if len(user_data[0]) < 5:
+        return
+    now = datetime.now()
+    for task in user_data:
+        if task[2] <= now:
+            await application.bot.send_message(chat_id=task[0], text=f"{task[1]} is due now!")
+            if task[3]:
+                task[2] += timedelta(days=task[4])
+            else:
+                user_data.remove(task)
+            print(user_data)
+        elif task[2] - timedelta(minutes=5) <= now:
+            due = int((task[2] - now).total_seconds() // 60)
+            if_s = "s" if due > 1 else ""
+            await application.bot.send_message(chat_id=task[0], text=f"{task[1]} is due in {due} minute{if_s}!")
+
 
 # clear tasks function
 async def clear_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -219,6 +244,9 @@ if __name__ == "__main__":
     
     # Messages
     app.add_handler(MessageHandler(filters.TEXT, handle_message))
+
+    # background tasks
+    app.job_queue.run_repeating(reminder_check, first=0, interval=5)
 
     # errors
     app.add_error_handler(error)
