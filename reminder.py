@@ -19,6 +19,8 @@ from datetime import datetime, timedelta
 * Create a way to pause reminders
 * Add a way to add persistent storage for tasks'
 * undo function
+* make the whole thing a bit prettier if possible
+* separate each function into a different file for readability
 '''
 
 
